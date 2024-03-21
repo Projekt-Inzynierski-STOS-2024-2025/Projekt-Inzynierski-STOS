@@ -8,3 +8,6 @@ edition = "2021"
 [dependencies]
 redis = {version="0.25.2", features = ["aio", "tokio-comp"]}
 tokio = {version = "1.36.0", features = ["full"]}
+
+[features]
+benchmark = []

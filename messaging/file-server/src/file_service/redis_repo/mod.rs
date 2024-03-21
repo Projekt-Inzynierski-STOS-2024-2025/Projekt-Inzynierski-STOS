@@ -1,10 +1,14 @@
 use redis::{Client, AsyncCommands, aio::MultiplexedConnection, RedisResult};
 
+#[cfg(test)]
+mod tests;
+
 // Default connection parameters in case env variables are not loaded
 const REDIS_ADDRESS: &'static str = "127.0.0.1";
 const COUNTER_KEY: &'static str = "path_counter";
 const DB_KEY: &'static str = "paths";
 
+#[derive(Clone, Debug)]
 pub struct RedisClient {
     con: MultiplexedConnection
 }
