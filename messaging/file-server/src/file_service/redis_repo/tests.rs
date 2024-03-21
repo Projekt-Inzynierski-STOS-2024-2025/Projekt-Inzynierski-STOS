@@ -1,4 +1,4 @@
-use crate::redis_repo::RedisClient;
+use super::RedisClient;
 
 #[tokio::test]
 async fn test_connection() {
