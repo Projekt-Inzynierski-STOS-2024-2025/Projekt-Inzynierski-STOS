@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+//
+// File server stuff
+//
+
+message File {
+	string name = 1;
+	bytes data = 2;
+}
+
+// File transfer message
+message Files {
+	repeated File content = 1;
+	string uuid = 2;
+}
+
+// File upload response/file download request
+message FileInfo {
+	string uuid = 1;
+	int64 directory_id = 2;
+}
+
+//
+// Errors 
+//
+
+enum ErrorType {
+	FILE_UPLOAD_ERROR = 1;
+	FILE_DOWNLOAD_ERROR = 2;
+	WORKER_OPERATION_ERROR = 3;
+	EVALUATOR_ERROR = 4;
+}
+
+// Error logging
+message Error {
+	string time = 1;
+	ErrorType error = 2;
+	string error_message = 3;
+}
+
+// Worker - evaluator communication
+message TaskDispatch {
+	string task_id = 1;
+	string student_id = 2;
+	int64 directory_id = 3;
+	bytes files_hash = 4;
+}
