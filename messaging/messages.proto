@@ -2,6 +2,9 @@ syntax = "proto3";
 
 package stos.messages;
 
+//
+// File server stuff
+//
 message File {
 	string name = 1;
 	bytes data = 2;
@@ -10,7 +13,6 @@ message File {
 //
 // Errors 
 //
-
 enum ErrorType {
 	FILE_UPLOAD_ERROR = 0;
 	FILE_DOWNLOAD_ERROR = 1;
