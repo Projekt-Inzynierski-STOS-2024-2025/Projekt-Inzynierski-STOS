@@ -26,6 +26,7 @@ message FileInfo {
 //
 
 enum ErrorType {
+	UNDEFINED_ERROR = 0;
 	FILE_UPLOAD_ERROR = 1;
 	FILE_DOWNLOAD_ERROR = 2;
 	WORKER_OPERATION_ERROR = 3;
