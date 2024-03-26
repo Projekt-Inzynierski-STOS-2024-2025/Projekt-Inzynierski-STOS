@@ -21,12 +21,15 @@ services:
       - kafka
 
   rabbitmq:
-    image: rabbitmq:3.13
+    image: rabbitmq:3-management-alpine
     container_name: rabbitmq
     ports:
       - "15672:15672"
       - "5672:5672"
+    networks:
+      - rabbitmq
 
 
 networks:
   kafka:
+  rabbitmq:
