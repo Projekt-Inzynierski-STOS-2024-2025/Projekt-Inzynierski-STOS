@@ -3,22 +3,22 @@ async fn main() {
     println!("Starting file server...");
     #[cfg(feature="benchmark")]
     {
-        use std::collections::HashMap;
         use file_server::file_service::FileService;
         use std::time::Instant;
+        use file_server::messages::File;
 
         let RUNS = 100000;
         println!("Starting io benchmark.");
         dbg!(RUNS);
-        let mut test_files: HashMap<String, Vec<u8>> = HashMap::new();
-        test_files.insert(
-            "first.txt".to_owned(),
-            b"Hello from first file!".to_vec()
-        );
-        test_files.insert(
-            "second.c".to_owned(),
-            b"Hello from c!".to_vec()
-        );
+        let mut test_files: Vec<File> = Vec::new();
+        test_files.push(File{
+            name: "first.txt".to_owned(),
+            data: b"Hello from first file!".to_vec()
+        });
+        test_files.push(File{
+            name: "second.c".to_owned(),
+            data: b"Hello from c!".to_vec()
+        });
 
         println!("Starting single routine benchmark");
         let start = Instant::now();

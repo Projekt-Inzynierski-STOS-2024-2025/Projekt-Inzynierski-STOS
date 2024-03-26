@@ -1,11 +1,12 @@
 use std::{collections::HashMap, fmt::{Debug, Display}, fs, path::PathBuf, str::FromStr};
 
+use crate::messages::{File, Files};
+
 #[cfg(test)]
 mod tests;
 
 static DATA_DIRECTORY: &'static str = "./data/";
 
-// TODO - better error forwarding
 fn save_data(data: &Vec<u8>, destination: PathBuf) -> Result<(), String> {
     match fs::write(destination, data) {
         Ok(_) => Ok(()),
@@ -37,19 +38,15 @@ where
 }
 
 // Create an empty directory at path and load up tha files
-// TODO - protobuf + dto shared among services
-pub fn save_files<T>(files: HashMap<String, Vec<u8>>, dir_id: T) -> Result<T, String>
+pub fn save_files<T>(files: Vec<File>, dir_id: T) -> Result<T, String>
 where 
     T: Display
 {
-    let dir = match create_directory(&dir_id) {
-        Ok(path) => path,
-        Err(e) => return Err(e)
-    };
-    for (name, data) in files.iter() {
+    let dir = create_directory(&dir_id)?;
+    for file in files {
         let mut file_path = dir.clone();
-        file_path.push(name);
-        let res = save_data(data, file_path.clone());
+        file_path.push(file.name);
+        let res = save_data(&file.data, file_path.clone());
         if res.is_err() {
             return Err(format!("Error while saving file: {:?}", file_path));
         }
@@ -58,16 +55,13 @@ where
 }
 
 // Read file contents from directory
-pub fn load_file_contents<T>(paths: Vec<String>, dir_id: T) -> Result<HashMap<String, Vec<u8>>, String> 
+pub fn load_file_contents<T>(paths: Vec<String>, dir_id: T) -> Result<Vec<File>, String> 
 where 
     T: Display
 {
-    let dir = match create_directory(&dir_id) {
-        Ok(path) => path,
-        Err(e) => return Err(e)
-    };
+    let dir = create_directory(&dir_id)?;
     // TODO - change it to prost generated struct
-    let mut res: HashMap<String, Vec<u8>>=  HashMap::new();
+    let mut res: Vec<File>=  Vec::new();
     for file_name in paths {
         let mut file_path = dir.clone();
         file_path.push(&file_name);
@@ -75,7 +69,7 @@ where
             Ok(data) => data,
             Err(_) => return Err(format!("Error while reading from file: {:?}", file_path))
         };
-        res.insert(file_name, contents);
+        res.push(File{data: contents, name: file_name});
     }
     Ok(res)
 }
