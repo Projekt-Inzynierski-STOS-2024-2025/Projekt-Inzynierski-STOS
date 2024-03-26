@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use crate::messages::File;
 
 use self::{filesystem::save_files, redis_repo::RedisClient};
 
@@ -20,9 +20,9 @@ impl FileService {
         Ok(FileService{rc})
     }
 
-    pub async fn store_files(&mut self, files: HashMap<String, Vec<u8>>) -> Result<(), String> {    
-        let id = match self.rc.store_paths(files.keys()
-            .map(|s| s.clone())
+    pub async fn store_files(&mut self, files: Vec<File>) -> Result<(), String> {    
+        let id = match self.rc.store_paths(files.iter()
+            .map(|s| s.name.clone())
             .collect()
         ).await {
             Ok(id) => id,
@@ -34,7 +34,7 @@ impl FileService {
         }
     }
 
-    pub async fn get_files(&mut self, id: i64) -> Result<HashMap<String, Vec<u8>>, String> {
+    pub async fn get_files(&mut self, id: i64) -> Result<Vec<File>, String> {
         let paths = match self.rc.get_paths(id).await {
             Ok(p) => p,
             Err(e) => return Err(e.to_string())
