@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package stos.messages;
+
 //
 // File server stuff
 //
@@ -26,10 +28,10 @@ message FileInfo {
 //
 
 enum ErrorType {
-	FILE_UPLOAD_ERROR = 1;
-	FILE_DOWNLOAD_ERROR = 2;
-	WORKER_OPERATION_ERROR = 3;
-	EVALUATOR_ERROR = 4;
+	FILE_UPLOAD_ERROR = 0;
+	FILE_DOWNLOAD_ERROR = 1;
+	WORKER_OPERATION_ERROR = 2;
+	EVALUATOR_ERROR = 3;
 }
 
 // Error logging
