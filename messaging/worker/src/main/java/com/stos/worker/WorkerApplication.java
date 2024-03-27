@@ -9,10 +9,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class WorkerApplication implements CommandLineRunner {
 
 	@Autowired
-	private RabbitMqWorker rabbitMqWorker;
+	private Worker worker;
 
 	@Autowired
-	RabbitMqEvaluatorMock rabbitMqEvaluatorMock;
+	EvaluatorMock evaluatorMock;
 
 	private final Scanner scanner;
 
@@ -31,13 +31,17 @@ public class WorkerApplication implements CommandLineRunner {
 			if ("q".equalsIgnoreCase(input)) {
 				break;
 			} else if ("wp".equalsIgnoreCase(input)) {
-				rabbitMqWorker.sendGeneratedMessage();
+				worker.sendGeneratedMessageRabbit();
 			} else if ("wc".equalsIgnoreCase(input)) {
-				System.out.println(rabbitMqWorker.receiveMessage());
+				System.out.println(worker.receiveMessageRabbit());
 			} else if ("ep".equalsIgnoreCase(input)) {
-				rabbitMqEvaluatorMock.sendGeneratedMessage();
+				evaluatorMock.sendGeneratedMessageRabbit();
 			} else if ("ec".equalsIgnoreCase(input)) {
-				System.out.println(rabbitMqEvaluatorMock.receiveMessage());
+				System.out.println(evaluatorMock.receiveMessageRabbit());
+			} else if ("wpk".equalsIgnoreCase(input)) {
+				worker.sendGeneratedMessageKafka();
+			} else if ("eck".equalsIgnoreCase(input)) {
+				evaluatorMock.readFromKafkaTopic();
 			}
 		}
 	}
