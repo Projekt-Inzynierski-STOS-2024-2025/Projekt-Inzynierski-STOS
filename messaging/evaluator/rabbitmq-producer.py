@@ -1,29 +1,44 @@
 from pika import BlockingConnection
 from pika import ConnectionParameters
 import time
-import sys
+import messages
 
 
-QUEUE_NAME: str = 'rabbitmq-test-queue'
-HOST_NAME: str = 'localhost'
+def send_message(exchange_name: str, queue_name: str, message_callback, data: dict, amount: int = 1):
+    HOST_NAME = 'localhost'
+    connection = BlockingConnection(ConnectionParameters(host=HOST_NAME))
+    channel = connection.channel()
+    channel.exchange_declare(exchange=exchange_name, exchange_type='direct')
+    channel.queue_declare(queue=queue_name)
+    channel.queue_bind(exchange=exchange_name, queue=queue_name, routing_key='')
+
+    message = getattr(messages, message_callback)(data)
+    for _ in range(amount):
+        channel.basic_publish(body=message.SerializeToString(), routing_key='', exchange=exchange_name)
+
+    connection.close()
 
 
-def produce_messages(amount: int):
-    con = BlockingConnection(ConnectionParameters(host=HOST_NAME))
-    channel = con.channel()
-    channel.queue_declare(queue=QUEUE_NAME)
+def resolve_payload(payload: str) -> dict:
+    result = {}
 
-    for i in range(amount):
-        message: str = f'Message {i}'
-        channel.basic_publish(body=message.encode(), routing_key=QUEUE_NAME, exchange='')
+    for pair in payload.split(","):
+        key_val = pair.split(":")
+        result[key_val[0]] = key_val[1]
 
-    con.close()
+    return result
 
 
 if __name__ == '__main__':
-    print("RabbitMQ producer - start")
-    amount: int = int(sys.argv[1])
-    start_time = time.time()
-    produce_messages(amount)
+    print("Evaluator producer - start")
+    exchange_name = "test-exchange"#sys.argv[1]
+    queue_name = "test-queue"#sys.argv[2]
 
-    print(f"Sent {amount} messages in {time.time() - start_time} seconds")
+    while True:
+        message = input("Enter message callback name: ")
+        payload = input("Pass message values")
+        resolved_payload = resolve_payload(payload)
+
+        start_time = time.time()
+        send_message(exchange_name, queue_name, message, resolved_payload)
+        print(f"Sent message in {time.time() - start_time} seconds")
