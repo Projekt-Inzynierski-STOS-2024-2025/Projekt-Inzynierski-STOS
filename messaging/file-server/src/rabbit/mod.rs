@@ -1,6 +1,7 @@
 use std::ops::{Deref, DerefMut};
-use deadpool::managed::{Manager, Pool};
-use lapin::ConnectionProperties;
+use deadpool_lapin::{Config, Pool};
+
+pub mod messages;
 
 #[derive(Clone, Debug)]
 pub struct RabbitClient {
@@ -25,15 +26,16 @@ impl DerefMut for RabbitClient {
 }
 
 impl RabbitClient  {
-    pub fn new(pool_size: usize) -> Self {
-        let addr = std::env::var("AMQP_ADDR")
-            .unwrap_or_else(|_| "amqp://rmq:rmq@127.0.0.1:5672/%2f".into());
-        let manager = Manager::new(addr, ConnectionProperties::default().with_tokio());
-        let pool: Pool = deadpool::managed::Pool::builder(manager)
-            .max_size(pool_size)
-            .build()
-            .expect("can create pool");
-
+    pub fn new() -> Self {
+        let mut cfg = Config::default();
+        cfg.url = Some("amqp://rmq:rmq@127.0.0.1:5672/%2f".into());
+        let pool = cfg.create_pool(Some(deadpool::Runtime::Tokio1)).unwrap();
         RabbitClient { pool }
     } 
+
+    pub fn run_messaging(&mut self) -> Result<(), String> {
+        
+
+        Ok(())
+    }
 }

@@ -1,3 +1,5 @@
+use file_server::rabbit::RabbitClient;
+
 #[tokio::main]
 async fn main() {
     println!("Starting file server...");
@@ -32,5 +34,7 @@ async fn main() {
         println!("Finished benchmark. Running cleanup");
         let _ = std::fs::remove_dir_all("./data");
     }
+    println!("Connecting to rabbitmq...");
+    let mut rabbit_client = RabbitClient::new();
     
 }
