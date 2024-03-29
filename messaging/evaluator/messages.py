@@ -20,7 +20,7 @@ def files_message(data: dict):
 def files_info_message(data: dict):
     message = messages_pb2.FileInfo()
     message.uuid = data['uuid']
-    message.directory_id = data['directory_id']
+    message.directory_id = int(data['directory_id'])
 
     return message
 
@@ -38,7 +38,7 @@ def task_dispatch_message(data: dict):
     message = messages_pb2.TaskDispatch()
     message.task_id = data['task_id']
     message.student_id = data['student_id']
-    message.directory_id = data['directory_id']
+    message.directory_id = int(data['directory_id'])
     message.files_hash = str(data['files_hash']).encode()
 
     return message
