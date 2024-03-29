@@ -2,25 +2,9 @@ syntax = "proto3";
 
 package stos.messages;
 
-//
-// File server stuff
-//
-
 message File {
 	string name = 1;
 	bytes data = 2;
-}
-
-// File transfer message
-message Files {
-	repeated File content = 1;
-	string uuid = 2;
-}
-
-// File upload response/file download request
-message FileInfo {
-	string uuid = 1;
-	int64 directory_id = 2;
 }
 
 //
@@ -41,10 +25,22 @@ message Error {
 	string error_message = 3;
 }
 
-// Worker - evaluator communication
+// Main event exchange message
 message TaskDispatch {
 	string task_id = 1;
 	string student_id = 2;
-	int64 directory_id = 3;
-	bytes files_hash = 4;
+	bytes files_hash = 3;
+	repeated File data = 4;
+}
+
+enum LogType {
+	INFO = 0;
+	ERROR = 1;
+	WARNING = 2;
+}
+
+message LogEvent {
+	string time = 1;
+	LogType type = 2;
+	string content = 3;
 }
