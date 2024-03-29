@@ -1,13 +1,53 @@
 from pika import BlockingConnection
 from pika import ConnectionParameters
+import threading
 import time
 import messages
+import messages_pb2
+
+
+def evaluator_task_callback(ch, method, properties, body):
+    print("evaluator_task_callback")
+    message = messages_pb2.File()
+    message.ParseFromString(body)
+    print(message.name)
+    print(message.data)
+
+
+def worker_task_callback(ch, method, properties, body):
+    print("worker_task_callback")
+    message = messages_pb2.File()
+    message.ParseFromString(body)
+    print(message.name)
+    print(message.data)
+
+
+def evaluator_file_callback(ch, method, properties, body):
+    print("evaluator_file_callback")
+    message = messages_pb2.File()
+    message.ParseFromString(body)
+    print(message.name)
+    print(message.data)
+
+
+def file_evaluator_callback(ch, method, properties, body):
+    print("file_evaluator_callback")
+    message = messages_pb2.File()
+    message.ParseFromString(body)
+    print(message.name)
+    print(message.data)
 
 
 HOST_NAME: str = 'localhost'
 queue_exchange_mapping: dict = {
     'evaluator_worker': ['evaluator_task_queue', 'worker_task_queue'],
     'evaluator_files': ['evaluator_file_queue', 'file_evaluator_queue']
+}
+queue_callback_mapping: dict = {
+    'evaluator_task_queue': evaluator_task_callback,
+    'worker_task_queue': worker_task_callback,
+    'evaluator_file_queue': evaluator_file_callback,
+    'file_evaluator_queue': file_evaluator_callback
 }
 
 connection = BlockingConnection(ConnectionParameters(host=HOST_NAME))
@@ -19,6 +59,14 @@ for exchange, queues in queue_exchange_mapping.items():
         channel.queue_declare(queue=queue)
         channel.queue_bind(exchange=exchange, queue=queue, routing_key=queue)
         print(f"Bound {queue} to {exchange}")
+
+
+def start_consuming():
+    for queue, callback_function in queue_callback_mapping.items():
+        print(f"Queue {queue} invokes callback: {callback_function}")
+        channel.basic_consume(queue=queue, on_message_callback=callback_function)
+    print("Evaluator consumer - start")
+    channel.start_consuming()
 
 
 def send_message(exchange_name: str, routing_key: str, message_callback, data: dict, amount: int = 1):
@@ -37,6 +85,9 @@ def resolve_payload(payload: str) -> dict:
 
 
 if __name__ == '__main__':
+    thread = threading.Thread(target=start_consuming)
+    thread.start()
+    time.sleep(1)
     print("Evaluator producer - start")
 
     while True:
