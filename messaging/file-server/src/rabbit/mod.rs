@@ -5,6 +5,10 @@ use futures::StreamExt;
 use lapin::{ConnectionProperties, options::{QueueDeclareOptions, BasicConsumeOptions, BasicAckOptions}, types::FieldTable};
 use tokio_amqp::LapinTokioExt;
 
+use crate::rabbit::handlers::handle_file_message;
+
+mod handlers;
+
 pub fn pool() -> &'static Pool {
     static POOL_LOCK: OnceLock<Pool> = OnceLock::new();
     POOL_LOCK.get_or_init(|| {
@@ -46,7 +50,7 @@ async fn init_rmq_listen() -> Result<(), lapin::Error> {
 
     let queue = channel
         .queue_declare(
-            "hello",
+            "files",
             QueueDeclareOptions::default(),
             FieldTable::default(),
         )
@@ -66,7 +70,10 @@ async fn init_rmq_listen() -> Result<(), lapin::Error> {
     while let Some(delivery) = consumer.next().await {
         if let Ok(delivery) = delivery {
             println!("received msg: {:?}", delivery);
-            // TODO - handle message reception
+            match handle_file_message(&delivery).await {
+                Ok(id) => println!("Saved file with id: {id}"), // TODO - send log
+                Err(e) => eprintln!("{e}") // TODO - send error log
+            }
             channel
                 .basic_ack(delivery.delivery_tag, BasicAckOptions::default())
                 .await?

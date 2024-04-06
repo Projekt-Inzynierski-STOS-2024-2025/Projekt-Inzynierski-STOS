@@ -24,7 +24,7 @@ async fn main() {
 
         println!("Starting single routine benchmark");
         let start = Instant::now();
-        let mut fs = FileService::new().await.unwrap();
+        let mut fs = FileService::new_async().await.unwrap();
         for _ in 0..RUNS {
             let better_files = test_files.clone();
             let _ = fs.store_files(better_files).await.unwrap();

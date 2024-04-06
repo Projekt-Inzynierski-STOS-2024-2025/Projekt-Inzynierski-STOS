@@ -11,16 +11,17 @@ pub struct FileService {
 }
 
 impl FileService {
-    pub async fn new() -> Result<Self, String> {
-        let rc = match RedisClient::new().await {
-            Ok(rc) => rc,
-            Err(s) => return Err(s)
-        };
-
+    pub async fn new_async() -> Result<Self, String> {
+        let rc = RedisClient::new_async().await?;
         Ok(FileService{rc})
     }
 
-    pub async fn store_files(&mut self, files: Vec<File>) -> Result<(), String> {    
+    pub fn new() -> Result<Self, String> {
+        let rc = RedisClient::new()?;
+        Ok(FileService{rc})
+    }
+
+    pub async fn store_files(&mut self, files: Vec<File>) -> Result<i64, String> {    
         let id = match self.rc.store_paths(files.iter()
             .map(|s| s.name.clone())
             .collect()
@@ -29,7 +30,7 @@ impl FileService {
             Err(s) => return Err(s.to_string())
         };
         match save_files(files, id) {
-            Ok(_) => Ok(()),
+            Ok(_) => Ok(id),
             Err(e) => Err(e)
         }
     }
