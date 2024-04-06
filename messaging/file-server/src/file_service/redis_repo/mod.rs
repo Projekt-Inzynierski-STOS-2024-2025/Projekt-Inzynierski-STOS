@@ -14,7 +14,7 @@ pub struct RedisClient {
 }
 
 impl RedisClient {
-    pub async fn new() -> Result<Self, String> {
+    pub async fn new_async() -> Result<Self, String> {
         let address = REDIS_ADDRESS;
         let client_string = format!("redis://{address}/");
         let client = match Client::open(client_string) {
@@ -26,6 +26,12 @@ impl RedisClient {
             Err(e) => return Err(e.to_string())
         };
         Ok(RedisClient{con})
+    }
+
+    pub fn new() -> Result<Self, String> {
+        futures::executor::block_on(async {
+            RedisClient::new_async().await
+        })
     }
 
     // Automatically generate unique id utilizing redis counters
