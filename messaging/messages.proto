@@ -44,3 +44,9 @@ message LogEvent {
 	LogType type = 2;
 	string content = 3;
 }
+
+// File transfer message
+message Files {
+	repeated File content = 1;
+	string uuid = 2;
+}
