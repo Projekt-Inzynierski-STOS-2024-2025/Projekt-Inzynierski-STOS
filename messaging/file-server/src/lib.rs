@@ -1,4 +1,4 @@
-use messages::Files;
+use messages::{Files, LogEvent};
 use prost::Message;
 
 pub mod file_service; 
@@ -21,6 +21,12 @@ impl From<Vec<u8>> for Files {
 
 impl From<Files> for Vec<u8> {
     fn from(value: Files) -> Self {
+        value.encode_to_vec()
+    }
+}
+
+impl From<LogEvent> for Vec<u8> {
+    fn from(value: LogEvent) -> Self {
         value.encode_to_vec()
     }
 }

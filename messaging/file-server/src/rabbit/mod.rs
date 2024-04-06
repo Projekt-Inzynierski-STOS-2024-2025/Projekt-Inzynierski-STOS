@@ -5,7 +5,7 @@ use futures::StreamExt;
 use lapin::{ConnectionProperties, options::{QueueDeclareOptions, BasicConsumeOptions, BasicAckOptions}, types::FieldTable};
 use tokio_amqp::LapinTokioExt;
 
-use crate::rabbit::handlers::handle_file_message;
+use crate::rabbit::handlers::{handle_file_message, handle_log_send, handle_error_send};
 
 mod handlers;
 
@@ -47,20 +47,21 @@ async fn init_rmq_listen() -> Result<(), lapin::Error> {
         e
     }).unwrap();
     let channel = rmq_con.create_channel().await.unwrap();
+    let channel_b = rmq_con.create_channel().await.unwrap();
 
-    let queue = channel
+    let log_queue = channel_b
         .queue_declare(
-            "files",
+            "log",
             QueueDeclareOptions::default(),
             FieldTable::default(),
         )
         .await.unwrap();
-    println!("Declared queue {:?}", queue);
+    println!("Declared queue {:?}", log_queue);
 
     let mut consumer = channel
         .basic_consume(
-            "hello",
-            "my_consumer",
+            "files",
+            "file_server",
             BasicConsumeOptions::default(),
             FieldTable::default(),
         )
@@ -71,8 +72,8 @@ async fn init_rmq_listen() -> Result<(), lapin::Error> {
         if let Ok(delivery) = delivery {
             println!("received msg: {:?}", delivery);
             match handle_file_message(&delivery).await {
-                Ok(id) => println!("Saved file with id: {id}"), // TODO - send log
-                Err(e) => eprintln!("{e}") // TODO - send error log
+                Ok(id) => handle_log_send(id, &channel_b).await?,
+                Err(e) => handle_error_send(e, &channel_b).await? 
             }
             channel
                 .basic_ack(delivery.delivery_tag, BasicAckOptions::default())
