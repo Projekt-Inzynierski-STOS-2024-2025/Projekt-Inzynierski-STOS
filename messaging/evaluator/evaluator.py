@@ -6,11 +6,12 @@ import time
 import messages_pb2
 
 
-HOST_NAME: str = 'localhost'
+HOST_NAME: str = 'rabbitmq'
 EXCHANGE_NAME: str = 'stos'
 QUEUE_TO_WORKER_NAME: str = 'ev_tasks'
 QUEUE_TO_LOGGER_NAME: str = 'files'
 QUEUE_FROM_WORKER_NAME: str = 'ev_files'
+FILESERVER_ROUTING_KEY = 'file_server'
 
 
 connection = BlockingConnection(ConnectionParameters(host=HOST_NAME))
@@ -25,7 +26,7 @@ def setup_channel():
 
     channel.queue_bind(exchange=EXCHANGE_NAME, queue=QUEUE_TO_WORKER_NAME, routing_key=QUEUE_TO_WORKER_NAME)
     channel.queue_bind(exchange=EXCHANGE_NAME, queue=QUEUE_FROM_WORKER_NAME, routing_key=QUEUE_FROM_WORKER_NAME)
-    channel.queue_bind(exchange=EXCHANGE_NAME, queue=QUEUE_TO_LOGGER_NAME, routing_key='file_server')
+    channel.queue_bind(exchange=EXCHANGE_NAME, queue=QUEUE_TO_LOGGER_NAME, routing_key=FILESERVER_ROUTING_KEY)
 
 
 def resolve_message(ch, parameters, method, body):
@@ -33,7 +34,7 @@ def resolve_message(ch, parameters, method, body):
     message.ParseFromString(body)
     time.sleep(random.random() * 2)
 
-    print("---Message---")
+    print("---Evaluator received message---")
     print(message.student_id)
     print(message.task_id)
     print(message.files_hash)
@@ -65,18 +66,18 @@ def send_message(task_id: str, student_id: str, files_hash: bytes, files: list):
     message.files_hash = files_hash
     message.data.extend(files_message_content)
 
-    channel.basic_publish(body=files_message.SerializeToString(), routing_key='file_server', exchange=EXCHANGE_NAME)
+    channel.basic_publish(body=files_message.SerializeToString(), routing_key=FILESERVER_ROUTING_KEY, exchange=EXCHANGE_NAME)
     channel.basic_publish(body=message.SerializeToString(), routing_key=QUEUE_TO_WORKER_NAME, exchange=EXCHANGE_NAME)
 
 
 if __name__ == '__main__':
+    setup_channel()
     thread = threading.Thread(target=start_consuming)
     thread.start()
     time.sleep(1)
     print("Evaluator producer - start")
 
-    while True:
-        pub = input("Press any key to send message")
+    while input("Press 's' to send a message") == 's':
         send_message("1", "1", b"1", [".gitignore"])
         start_time = time.time()
         print(f"Sent message in {time.time() - start_time} seconds")
