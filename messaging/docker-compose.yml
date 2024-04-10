@@ -17,6 +17,8 @@ services:
     networks:
       - stos-network
     restart: on-failure
+    volumes:
+      - ./data:/build/data
   redis:
     image: redis:7.2-alpine
     networks:
