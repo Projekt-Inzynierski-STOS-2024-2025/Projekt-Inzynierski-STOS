@@ -15,7 +15,7 @@ pub struct RedisClient {
 
 impl RedisClient {
     pub async fn new_async() -> Result<Self, String> {
-        let address = REDIS_ADDRESS;
+        let address = std::env::var("REDIS_ADDRESS").unwrap_or(REDIS_ADDRESS.to_string());
         let client_string = format!("redis://{address}/");
         let client = match Client::open(client_string) {
             Ok(c) => c,

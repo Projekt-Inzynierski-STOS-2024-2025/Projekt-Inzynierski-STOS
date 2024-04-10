@@ -6,7 +6,21 @@ services:
       - "15672:15672"
       - "5672:5672"
     networks:
-      - rabbitmq
+      - stos-network
+  file-server:
+    build:
+      context: .
+      dockerfile: ./file-server/Dockerfile
+    environment:
+      - REDIS_ADDRESS=redis
+      - RABBIT_ADDRESS=rabbitmq
+    networks:
+      - stos-network
+    restart: on-failure
+  redis:
+    image: redis:7.2-alpine
+    networks:
+      - stos-network
 
 networks:
-  rabbitmq:
+  stos-network:
