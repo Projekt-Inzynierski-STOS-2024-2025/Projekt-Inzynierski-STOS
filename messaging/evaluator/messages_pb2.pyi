@@ -65,3 +65,11 @@ class LogEvent(_message.Message):
     type: LogType
     content: str
     def __init__(self, time: _Optional[str] = ..., type: _Optional[_Union[LogType, str]] = ..., content: _Optional[str] = ...) -> None: ...
+
+class Files(_message.Message):
+    __slots__ = ("content", "uuid")
+    CONTENT_FIELD_NUMBER: _ClassVar[int]
+    UUID_FIELD_NUMBER: _ClassVar[int]
+    content: _containers.RepeatedCompositeFieldContainer[File]
+    uuid: str
+    def __init__(self, content: _Optional[_Iterable[_Union[File, _Mapping]]] = ..., uuid: _Optional[str] = ...) -> None: ...
