@@ -2,7 +2,7 @@ use std::{sync::OnceLock, time::Duration};
 
 use deadpool_lapin::{Pool, Manager, PoolError, Connection};
 use futures::StreamExt;
-use lapin::{ConnectionProperties, options::{QueueDeclareOptions, BasicConsumeOptions, BasicAckOptions}, types::FieldTable};
+use lapin::{options::{BasicAckOptions, BasicConsumeOptions, ExchangeDeclareOptions, QueueBindOptions, QueueDeclareOptions}, types::FieldTable, ConnectionProperties};
 use tokio_amqp::LapinTokioExt;
 
 use crate::rabbit::handlers::{handle_file_message, handle_log_send, handle_error_send};
@@ -12,8 +12,9 @@ mod handlers;
 pub fn pool() -> &'static Pool {
     static POOL_LOCK: OnceLock<Pool> = OnceLock::new();
     POOL_LOCK.get_or_init(|| {
-        let addr = "amqp://guest:guest@127.0.0.1:5672/%2f".to_owned();
-        let manager = Manager::new(addr, ConnectionProperties::default().with_tokio());
+        let host = std::env::var("RABBIT_ADDRESS").unwrap_or("127.0.0.1".to_string());
+        let addr = format!("amqp://guest:guest@{host}:5672/%2f");
+        let manager = Manager::new(dbg!(addr), ConnectionProperties::default().with_tokio());
         let pool: Pool = deadpool::managed::Pool::builder(manager)
             .max_size(10)
             .build()
@@ -56,8 +57,11 @@ async fn init_rmq_listen() -> Result<(), lapin::Error> {
             FieldTable::default(),
         )
         .await.unwrap();
-    println!("Declared queue {:?}", log_queue);
 
+    // Handle rmq queue creation
+    let _ = channel.queue_declare("files", QueueDeclareOptions::default(), FieldTable::default()).await.unwrap();
+    let _ = channel.exchange_declare("stos", lapin::ExchangeKind::Direct, ExchangeDeclareOptions::default(), FieldTable::default()).await.unwrap();
+    let _ = channel.queue_bind("files", "stos", "file_server", QueueBindOptions::default(), FieldTable::default()).await.unwrap();
     let mut consumer = channel
         .basic_consume(
             "files",
