@@ -74,7 +74,6 @@ async fn init_rmq_listen() -> Result<(), lapin::Error> {
     println!("rmq consumer connected, waiting for messages");
     while let Some(delivery) = consumer.next().await {
         if let Ok(delivery) = delivery {
-            println!("received msg: {:?}", delivery);
             match handle_file_message(&delivery).await {
                 Ok(id) => handle_log_send(id, &channel_b).await?,
                 Err(e) => handle_error_send(e, &channel_b).await? 
