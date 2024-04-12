@@ -23,6 +23,12 @@ services:
     image: redis:7.2-alpine
     networks:
       - stos-network
+  logger:
+    build: ./logger
+    networks:
+      - stos-network
+    environment:
+      - RABBIT_ADDR=rabbitmq
 
 networks:
   stos-network:
