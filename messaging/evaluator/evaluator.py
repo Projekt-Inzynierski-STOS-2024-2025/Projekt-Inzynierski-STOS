@@ -10,24 +10,26 @@ import messages_pb2
 HOST_NAME: str = 'rabbitmq'
 EXCHANGE_NAME: str = 'stos'
 QUEUE_TO_WORKER_NAME: str = 'ev_tasks'
-QUEUE_TO_LOGGER_NAME: str = 'files'
+QUEUE_TO_FILES_NAME: str = 'files'
 QUEUE_FROM_WORKER_NAME: str = 'ev_files'
 FILESERVER_ROUTING_KEY = 'file_server'
 
 
-connection = BlockingConnection(ConnectionParameters(host=HOST_NAME))
-channel = connection.channel()
+sender_connection = BlockingConnection(ConnectionParameters(host=HOST_NAME))
+sender_channel = sender_connection.channel()
+receiver_connection = BlockingConnection(ConnectionParameters(host=HOST_NAME))
+receiver_channel = receiver_connection.channel()
 
 
 def setup_channel():
-    channel.exchange_declare(exchange=EXCHANGE_NAME, exchange_type='direct')
-    channel.queue_declare(queue=QUEUE_TO_WORKER_NAME)
-    channel.queue_declare(queue=QUEUE_TO_LOGGER_NAME)
-    channel.queue_declare(queue=QUEUE_FROM_WORKER_NAME)
+    sender_channel.exchange_declare(exchange=EXCHANGE_NAME, exchange_type='direct')
+    sender_channel.queue_declare(queue=QUEUE_TO_WORKER_NAME)
+    sender_channel.queue_declare(queue=QUEUE_TO_FILES_NAME)
+    sender_channel.queue_bind(exchange=EXCHANGE_NAME, queue=QUEUE_TO_FILES_NAME, routing_key=FILESERVER_ROUTING_KEY)
+    sender_channel.queue_bind(exchange=EXCHANGE_NAME, queue=QUEUE_TO_WORKER_NAME, routing_key=QUEUE_TO_WORKER_NAME)
 
-    channel.queue_bind(exchange=EXCHANGE_NAME, queue=QUEUE_TO_WORKER_NAME, routing_key=QUEUE_TO_WORKER_NAME)
-    channel.queue_bind(exchange=EXCHANGE_NAME, queue=QUEUE_FROM_WORKER_NAME, routing_key=QUEUE_FROM_WORKER_NAME)
-    channel.queue_bind(exchange=EXCHANGE_NAME, queue=QUEUE_TO_LOGGER_NAME, routing_key=FILESERVER_ROUTING_KEY)
+    receiver_channel.queue_declare(queue=QUEUE_FROM_WORKER_NAME)
+    receiver_channel.queue_bind(exchange=EXCHANGE_NAME, queue=QUEUE_FROM_WORKER_NAME, routing_key=QUEUE_FROM_WORKER_NAME)
 
 
 def resolve_message(ch, parameters, method, body):
@@ -44,9 +46,9 @@ def resolve_message(ch, parameters, method, body):
 
 
 def start_consuming():
-    channel.basic_consume(queue=QUEUE_FROM_WORKER_NAME, on_message_callback=resolve_message, auto_ack=True)
+    receiver_channel.basic_consume(queue=QUEUE_FROM_WORKER_NAME, on_message_callback=resolve_message, auto_ack=True)
     print("Evaluator consumer - start")
-    channel.start_consuming()
+    receiver_channel.start_consuming()
 
 
 def send_message(task_id: str, student_id: str, files_hash: bytes, files: list):
@@ -67,8 +69,8 @@ def send_message(task_id: str, student_id: str, files_hash: bytes, files: list):
     message.files_hash = files_hash
     message.data.extend(files_message_content)
 
-    channel.basic_publish(body=files_message.SerializeToString(), routing_key=FILESERVER_ROUTING_KEY, exchange=EXCHANGE_NAME)
-    channel.basic_publish(body=message.SerializeToString(), routing_key=QUEUE_TO_WORKER_NAME, exchange=EXCHANGE_NAME)
+    sender_channel.basic_publish(body=files_message.SerializeToString(), routing_key=FILESERVER_ROUTING_KEY, exchange=EXCHANGE_NAME)
+    sender_channel.basic_publish(body=message.SerializeToString(), routing_key=QUEUE_TO_WORKER_NAME, exchange=EXCHANGE_NAME)
     time.sleep(0.01)
 
 
@@ -77,6 +79,7 @@ app = Flask(__name__)
 
 @app.get("/evaluator")
 def send_evaluator_message():
+    print("Received call")
     amount = int(request.args.get('amount'))
     for _ in range(amount):
         send_message("1", "1", b"1", [".gitignore"])
@@ -91,4 +94,4 @@ if __name__ == '__main__':
     time.sleep(1)
     print("Evaluator producer - start")
 
-    app.run()
+    app.run(host="0.0.0.0", port=5000)
