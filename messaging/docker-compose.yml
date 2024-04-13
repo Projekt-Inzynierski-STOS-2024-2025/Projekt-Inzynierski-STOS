@@ -29,6 +29,11 @@ services:
       - stos-network
     environment:
       - RABBIT_ADDR=rabbitmq
+  worker:
+    build:
+      dockerfile: ./worker/Dockerfile
+    networks:
+      - stos-network
 
 networks:
   stos-network:
