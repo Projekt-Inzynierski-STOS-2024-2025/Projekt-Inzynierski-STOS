@@ -7,6 +7,7 @@ services:
       - "5672:5672"
     networks:
       - stos-network
+
   file-server:
     build:
       context: .
@@ -19,16 +20,29 @@ services:
     restart: on-failure
     volumes:
       - ./data:/build/data
+
   redis:
     image: redis:7.2-alpine
     networks:
       - stos-network
+
   logger:
     build: ./logger
     networks:
       - stos-network
     environment:
       - RABBIT_ADDR=rabbitmq
+
+  evaluator:
+    build:
+      dockerfile: ./evaluator/Dockerfile
+    networks:
+      - stos-network
+    depends_on:
+      - rabbitmq
+    ports:
+      - "8080:5000"
+    restart: on-failure
 
 networks:
   stos-network:

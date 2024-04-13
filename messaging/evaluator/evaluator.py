@@ -1,5 +1,6 @@
 from pika import BlockingConnection
 from pika import ConnectionParameters
+from flask import Flask, request
 import random
 import threading
 import time
@@ -68,6 +69,19 @@ def send_message(task_id: str, student_id: str, files_hash: bytes, files: list):
 
     channel.basic_publish(body=files_message.SerializeToString(), routing_key=FILESERVER_ROUTING_KEY, exchange=EXCHANGE_NAME)
     channel.basic_publish(body=message.SerializeToString(), routing_key=QUEUE_TO_WORKER_NAME, exchange=EXCHANGE_NAME)
+    time.sleep(0.01)
+
+
+app = Flask(__name__)
+
+
+@app.get("/evaluator")
+def send_evaluator_message():
+    amount = int(request.args.get('amount'))
+    for _ in range(amount):
+        send_message("1", "1", b"1", [".gitignore"])
+
+    return "Message sent"
 
 
 if __name__ == '__main__':
@@ -77,7 +91,4 @@ if __name__ == '__main__':
     time.sleep(1)
     print("Evaluator producer - start")
 
-    while input("Press 's' to send a message") == 's':
-        send_message("1", "1", b"1", [".gitignore"])
-        start_time = time.time()
-        print(f"Sent message in {time.time() - start_time} seconds")
+    app.run()
