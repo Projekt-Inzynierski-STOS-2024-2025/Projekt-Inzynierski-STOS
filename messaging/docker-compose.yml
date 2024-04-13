@@ -31,9 +31,10 @@ services:
       - RABBIT_ADDR=rabbitmq
   worker:
     build:
-      dockerfile: ./worker/Dockerfile
+      context: ./worker
+      dockerfile: Dockerfile
     networks:
       - stos-network
-
+    restart: on-failure
 networks:
   stos-network:
