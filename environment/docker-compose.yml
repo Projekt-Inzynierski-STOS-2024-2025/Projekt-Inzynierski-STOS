@@ -1,0 +1,10 @@
+services:
+  evaluator:
+    build: ./eval
+    ports:
+      - "2137:2137"
+    networks:
+      - stos-net
+      
+networks:
+  stos-net:
