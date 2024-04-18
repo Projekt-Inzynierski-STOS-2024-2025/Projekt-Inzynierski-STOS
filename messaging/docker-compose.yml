@@ -43,6 +43,7 @@ services:
 
   evaluator:
     build:
+      context: .
       dockerfile: ./evaluator/Dockerfile
     networks:
       - stos-network
