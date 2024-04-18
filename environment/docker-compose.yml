@@ -5,6 +5,12 @@ services:
       - "2137:2137"
     networks:
       - stos-net
-      
+  
+  worker:
+    build: ./worker
+    networks:
+      - stos-net
+    environment:
+      - TASK_COMPLETION_TIME=5000
 networks:
   stos-net:
