@@ -1,0 +1,15 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: evaluator-ingress
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /evaluator
+        pathType: Prefix
+        backend:
+          service:
+            name: evaluator
+            port:
+              number: 2137
