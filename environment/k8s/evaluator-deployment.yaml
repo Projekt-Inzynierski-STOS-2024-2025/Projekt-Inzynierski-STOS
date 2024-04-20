@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: evaluator
+  labels:
+    app: evaluator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: evaluator
+  template:
+    metadata:
+      labels:
+        app: evaluator
+    spec:
+      containers:
+      - name: evaluator
+        image: environment-evaluator:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 2137
