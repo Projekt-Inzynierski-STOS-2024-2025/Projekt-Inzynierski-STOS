@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import java.io.IOException;
 
 
 @SpringBootApplication
@@ -66,9 +67,12 @@ public class WorkerApplication {
 	public void timeConsumingTask(Task task){
 		logger.info("Start processing task {}", task.getId());
 		try {
-			Thread.sleep(taskCompletionTime);
-		} catch (InterruptedException e) {
+			Process process = Runtime.getRuntime().exec("workload");
+			process.waitFor();
+		} catch (IOException e) {
 			logger.error("{}", e.getMessage());
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 		logger.info("Finished processing task {}", task.getId());
 	}
