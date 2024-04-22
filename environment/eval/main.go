@@ -75,6 +75,7 @@ func handleConsume(w http.ResponseWriter, r *http.Request) {
 
 type CompleteRequestDTO struct {
 	ID string `json:"id"`
+	TIME string `json:"time"`	
 }
 
 func handleComplete(w http.ResponseWriter, r *http.Request) {
@@ -88,7 +89,7 @@ func handleComplete(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 		return
 	}
-	log.Infof("Received results from worker for task: %s", body.ID)
+	log.Infof("Received results from worker for task: %s, processing time: %s miliseconds", body.ID, body.TIME)
 }
 
 func main() {

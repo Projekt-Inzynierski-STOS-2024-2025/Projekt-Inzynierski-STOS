@@ -55,7 +55,8 @@ public class WorkerApplication {
 		try {
 			Task task = new Task(restTemplate.getForObject(consumeUrl, String.class));
             logger.info("Received task with UUID - {}", task.getId());
-            timeConsumingTask(task);
+            String time = timeConsumingTask(task);
+			task.setTime(time);
             sendCompletionRequest(task);
         } catch (HttpClientErrorException ex) {
 			logger.error("Get request response - {}", ex.getStatusCode().value());
@@ -64,7 +65,8 @@ public class WorkerApplication {
 		}
 	}
 
-	public void timeConsumingTask(Task task){
+	public String timeConsumingTask(Task task){
+		long startTime = System.currentTimeMillis();
 		logger.info("Start processing task {}", task.getId());
 		try {
 			Process process = Runtime.getRuntime().exec("workload");
@@ -75,6 +77,8 @@ public class WorkerApplication {
 			e.printStackTrace();
 		}
 		logger.info("Finished processing task {}", task.getId());
+		long endTime = System.currentTimeMillis();
+		return String.valueOf(endTime - startTime);
 	}
 
 	public void sendCompletionRequest(Task task){

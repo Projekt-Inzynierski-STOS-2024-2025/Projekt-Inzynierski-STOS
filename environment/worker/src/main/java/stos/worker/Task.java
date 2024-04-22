@@ -5,6 +5,9 @@ public class Task {
     @JsonProperty("id")
     private String id;
 
+    @JsonProperty("time")
+    private String time;
+
     public Task(String id) {
         this.id = id;
     }
@@ -16,6 +19,8 @@ public class Task {
     public void setId(String id) {
         this.id = id;
     }
+
+    public void setTime(String time){ this.time = time;}
 }
 
 
