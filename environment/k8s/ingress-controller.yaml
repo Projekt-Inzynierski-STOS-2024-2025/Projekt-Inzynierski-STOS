@@ -3,10 +3,11 @@ kind: Ingress
 metadata:
   name: evaluator-ingress
 spec:
+  ingressClassName: nginx
   rules:
   - http:
       paths:
-      - path: /evaluator
+      - path: /
         pathType: Prefix
         backend:
           service:
