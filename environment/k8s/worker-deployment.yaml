@@ -5,7 +5,7 @@ metadata:
   labels:
     app: worker
 spec:
-  replicas: 10
+  replicas: 5
   selector:
     matchLabels:
       app: worker
@@ -21,7 +21,7 @@ spec:
         resources:
           requests:
             memory: "1024Mi"
-            cpu: "250m"
+            cpu: "1000m"
           limits:
             memory: "1024Mi"
-            cpu: "250m"
+            cpu: "1000m"

@@ -18,6 +18,6 @@ pub fn run_compute(dim: usize) {
 }
 
 fn get_random_val(rng: &mut rand::rngs::ThreadRng) -> f32{
-    rng.gen()
+    1.4
 }
 
