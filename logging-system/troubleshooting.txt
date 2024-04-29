@@ -1,0 +1,29 @@
+ELASTICSEARCH
+
+1. Elasticsearch exit with error 78:
+	1.1 If on windows, run command: wsl -d docker-desktop
+ 	1.2 Run following command: sysctl -w vm.max_map_count=262144
+
+2. Elasticsearch certificate needed:
+	2.1 docker cp logging-system-es01-1:/usr/share/elasticsearch/config/certs/ca/ca.crt ./
+	2.2 curl --cacert ./ca.crt -u elastic:password https://localhost:9200 --ssl-no-revoke (--ssl-no-revoke needed for Windows)
+
+After successful run elasticsearch available at https://localhost:9200 with username: elastic and password defined in the docker-compose.yml file
+
+
+KIBANA
+
+1. Kibana requires enrollment code that didn't generate on elasticsearch's start.
+	1.1 Enter the elasticsearch container
+	1.2 Run: bin/elasticsearch-create-enrollment-token --scope kibana
+	1.3 Enter the kibana container
+	1.4 Run: bin\kibana-verification-code
+	1.5 Paste generated code
+
+
+METRICBEAT
+
+1. config file ("metricbeat.yml") can only be writable by the owner but the permissions are "-rwxrwxrwx"
+	1.1 Locate metricbeat.yml file and open its properties.
+	1.2 Check "Read only" option.
+	1.3 Restart
