@@ -2,3 +2,4 @@ esdata01/
 .env
 *.crt
 filebeat_ingest_data/
+logstash_ingest_data/
