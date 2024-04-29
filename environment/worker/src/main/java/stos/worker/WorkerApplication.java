@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpEntity;
@@ -26,19 +25,17 @@ public class WorkerApplication {
 	private static final Logger logger = LoggerFactory.getLogger(WorkerApplication.class);
 	private final String consumeUrl;
 	private final String completeUrl;
-	private final Integer taskCompletionTime;
 	private final RestTemplate restTemplate;
 
 
 	public WorkerApplication(
 					 @Value("${evaluator.consume.url}") String consumeUrl,
-					 @Value("${evaluator.complete.url}") String completeUrl,
-					 @Value("${task.completion.time}") Integer taskCompletionTime) {
+					 @Value("${evaluator.complete.url}") String completeUrl) {
 		this.restTemplate = new RestTemplate();
 		this.consumeUrl = consumeUrl;
-		this.completeUrl = completeUrl;;
-		this.taskCompletionTime = taskCompletionTime;
-		if(this.completeUrl == null || this.consumeUrl == null || this.taskCompletionTime == null){
+		this.completeUrl = completeUrl;
+
+		if(this.completeUrl == null || this.consumeUrl == null ){
 			logger.error("Not all env set");
 		}
 	}

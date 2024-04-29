@@ -1,0 +1,24 @@
+services:
+  evaluator:
+    image: environment-evaluator:latest
+    ports:
+      - "2137:2137"
+    networks:
+      - stos-net
+  
+  worker:
+    image: environment-worker:latest
+    networks:
+      - stos-net
+    environment:
+      - TASK_COMPLETION_TIME=5000
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1024M
+        reservations:
+          cpus: '1.0'
+          memory: 1024M
+networks:
+  stos-net:

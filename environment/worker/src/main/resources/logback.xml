@@ -1,0 +1,14 @@
+<configuration>
+    <property resource="application.properties" />
+    <appender name="TCP" class="ch.qos.logback.classic.net.SocketAppender">
+        <remoteHost>${LOG_HOST}</remoteHost>
+        <port>${LOG_PORT}</port>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="debug">
+        <appender-ref ref="TCP"/>
+    </root>
+</configuration>

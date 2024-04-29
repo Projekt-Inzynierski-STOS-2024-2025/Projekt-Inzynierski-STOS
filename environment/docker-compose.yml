@@ -11,6 +11,7 @@ services:
     networks:
       - stos-net
     environment:
-      - TASK_COMPLETION_TIME=5000
+      - LOG_HOST=http://logstash01
+      - LOG_PORT=9601
 networks:
   stos-net:
