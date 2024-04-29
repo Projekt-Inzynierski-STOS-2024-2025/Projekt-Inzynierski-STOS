@@ -4,14 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
+	log "github.com/KaranJagtiani/go-logstash"
 	"github.com/google/uuid"
-	log "github.com/sirupsen/logrus"
 )
 
 var tasks chan string;
+var logger *log.Logstash;
 
 type QueueError struct {}
 
@@ -22,7 +24,11 @@ func (q *QueueError) Error() string {
 func getId() string{
 	id, err := uuid.NewRandom();
 	if err != nil {
-		log.Error("Error while generating uuid")
+		payload := map[string]interface{}{
+			"message": "Error while generating uuid",
+			"error":   true,
+		}
+		logger.Error(payload)
 		id = uuid.Max;
 	}
 	return id.String()
@@ -31,7 +37,11 @@ func getId() string{
 func registerTask() {
 	id := getId();
 	tasks <- id
-	log.Infof("Registered task with uuid: %s", id)
+	payload := map[string]interface{}{
+		"message": fmt.Sprintf("Registered task with uuid: %s", id),
+		"error":   false,
+	}
+	logger.Log(payload)
 }
 
 func consumeTask() (string, error){
@@ -41,12 +51,20 @@ func consumeTask() (string, error){
 	select {
 	case id := <-tasks: 
         {
-		log.Infof("Consumed task: %s", id);
+		payload := map[string]interface{}{
+			"message": fmt.Sprintf("Consumed task: %s", id),
+			"error":   false,
+		}
+		logger.Log(payload);
 		return id, nil;
 	}
 	case <-time.After(time.Duration(3 * time.Second)): 
 	{
-		log.Warn("No tasks in queue, timed out")
+		payload := map[string]interface{}{
+			"message": "No tasks in queue, timed out",
+			"error":   false,
+		}
+		logger.Log(payload)
 		return "", &QueueError{}
 	}
 	}
@@ -85,19 +103,36 @@ func handleComplete(w http.ResponseWriter, r *http.Request) {
 	dec.DisallowUnknownFields()
 	err := dec.Decode(&body);
 	if err != nil {
-		log.Warnf("Received invalid request from worker")
+		payload := map[string]interface{}{
+			"message": "Received invalid request from worker",
+			"error":   false,
+		}
+		logger.Warn(payload)
 		w.WriteHeader(400)
 		return
 	}
-	log.Infof("Received results from worker for task: %s, processing time: %s miliseconds", body.ID, body.TIME)
+	logger.LogString(fmt.Sprintf("Received results from worker for task: %s, processing time: %s miliseconds", body.ID, body.TIME))
 }
 
 func main() {
-	log.Info("Starting evaluator")
+	logstashAddress, ok := os.LookupEnv("LOGSTASH_ADDR");
+	if !ok {
+		logstashAddress = "localhost"
+	}
+	logger = log.Init(logstashAddress, 5228, "tcp", 5);
+	payload := map[string]interface{}{
+		"message": "Starting evaluator",
+		"error":   false,
+	}
+	logger.Info(payload)
 	tasks = make(chan string, 10000)
 	http.HandleFunc("/generate", handleTasks)
 	http.HandleFunc("/consume", handleConsume)
 	http.HandleFunc("/complete", handleComplete)
-	log.Info("Started web server")
+	payload = map[string]interface{}{
+		"message": "Starting web server",
+		"error":   false,
+	}
+	logger.Info(payload)
 	http.ListenAndServe(":2137", nil)
 }
