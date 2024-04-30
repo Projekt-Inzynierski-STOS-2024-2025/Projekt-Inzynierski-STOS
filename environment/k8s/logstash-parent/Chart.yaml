@@ -1,0 +1,11 @@
+apiVersion: v2
+name: logstash-parent
+description: Parent child for logstash deployment
+
+type: application
+version: 0.1.0
+dependencies:
+  - name: logstash
+    version: '7.17.3'
+    repository: '@elastic'
+

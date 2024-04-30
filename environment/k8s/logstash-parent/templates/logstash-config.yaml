@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config
+data:
+  logstash.yml: |
+    http.host: "0.0.0.0"
+    xpack.monitoring.enabled: false
+    
+  pipelines.yml: |
+    - pipeline.id: main
+      path.config: "/usr/share/logstash/pipeline/main*.conf"
+      pipeline.ecs_compatibility: v8
+    
+    - pipeline.id: audit
+      path.config: "/usr/share/logstash/pipeline/audit.conf"
+

@@ -1,0 +1,51 @@
+logstash:
+  extraVolumes:
+  - name: logstash-config
+    configMap:
+      name: logstash-config
+      items:
+        - key: logstash.yml
+          path: logstash.yml
+        - key: pipelines.yml
+          path: pipelines.yml
+
+  - name: pipelines
+    configMap:
+      name: pipeline-config
+
+  extraVolumeMounts:
+  - name: logstash-config
+    mountPath: /usr/share/logstash/config/logstash.yml
+    subPath: logstash.yml
+  - name: logstash-config
+    mountPath: /usr/share/logstash/config/pipelines.yml
+    subPath: pipelines.yml
+  - name: pipelines
+    mountPath: /usr/share/logstash/pipeline
+
+  extraPorts:
+    - name: logging
+      containerPort: 5228
+  service:
+    type: ClusterIP
+    ports:
+      - name: logging
+        port: 5228
+        protocol: TCP
+        targetPort: 5228
+      - name: http
+        port: 9600
+        protocol: TCP
+        targetPort: 9600
+
+  secretMounts: 
+    - name: elasticsearch-certs
+      secretName: elasticsearch-es-http-certs-internal
+      path: /usr/share/logstash/config/certs
+
+  extraEnvs:
+    - name: "ELASTICSEARCH_PASSWORD"
+      valueFrom:
+        secretKeyRef:
+          name: elasticsearch-es-elastic-user
+          key: elastic
