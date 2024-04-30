@@ -111,7 +111,19 @@ func handleComplete(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 		return
 	}
-	logger.LogString(fmt.Sprintf("Received results from worker for task: %s, processing time: %s miliseconds", body.ID, body.TIME))
+	time, err := strconv.Atoi(body.TIME);
+	error := false;
+	if err != nil {
+		time = 0;
+		error = true;
+
+	}
+	payload := map[string]interface{}{
+		"message": fmt.Sprintf("Received worker result for task: %s", body.ID),
+		"error":   error,
+		"duration": time,
+	}
+	logger.Log(payload)
 }
 
 func main() {

@@ -20,3 +20,6 @@ spec:
         imagePullPolicy: Never
         ports:
         - containerPort: 2137
+        env:
+          - name: LOGSTASH_ADDR
+            value: "logstash-logstash"

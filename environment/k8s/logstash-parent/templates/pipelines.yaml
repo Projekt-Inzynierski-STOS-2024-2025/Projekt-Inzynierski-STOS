@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pipeline-config
+data:
+  main_01_input.conf: |
+    input {
+      tcp {
+        host => "0.0.0.0"
+        port => "5228"
+        codec => json_lines {
+          target => "[content]"  
+        }
+      }
+    }
+  main_02_output.conf: |
+    output {
+      stdout {
+        codec => rubydebug
+      }
+      elasticsearch {
+        hosts => ["https://elasticsearch-es-http:9200"]
+        user => 'elastic'
+        cacert => '/usr/share/logstash/config/certs/ca.crt'
+        password => '${ELASTICSEARCH_PASSWORD}'
+        index => 'logstash'
+      }
+    }
+  audit.conf: |
+    input {
+      syslog {
+        port => 12345
+      }
+    }
+    output {
+      stdout {
+        codec => rubydebug
+      }
+    }
+  
