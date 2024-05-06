@@ -5,8 +5,14 @@
         <port>${LOG_PORT}</port>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
+    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender>
 
     <root level="debug">
         <appender-ref ref="TCP"/>
+        <appender-ref ref="stdout"/>
     </root>
+
+
 </configuration>

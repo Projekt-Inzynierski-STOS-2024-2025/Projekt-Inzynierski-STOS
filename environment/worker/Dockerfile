@@ -27,7 +27,7 @@ ENV SPRING_MAIN_LOG-STARTUP-INFO=false
 ENV SPRING_MAIN_BANNER-MODE=OFF
 ENV EVALUATOR_CONSUME_URL=http://evaluator:2137/consume
 ENV EVALUATOR_COMPLETE_URL=http://evaluator:2137/complete
-ENV LOG_HOST=http://logstash
+ENV LOG_HOST=logstash-logstash
 ENV LOG_PORT=5228
 
 CMD ["java", "-jar", "worker.jar"]

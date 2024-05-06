@@ -11,7 +11,7 @@ services:
     networks:
       - stos-net
     environment:
-      - LOG_HOST=http://logstash01
-      - LOG_PORT=9601
+      - LOG_HOST=logstash-logstash
+      - LOG_PORT=5228
 networks:
   stos-net:
